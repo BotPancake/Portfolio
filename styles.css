@@ -21,7 +21,7 @@ ul{
 
 }
 ul li{
-    float: left;
+    align-items: "center";
 
 }
 
