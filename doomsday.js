@@ -81,3 +81,10 @@ async function fetchNews() {
 // Initial load + refresh every 10 minutes
 fetchNews();
 setInterval(fetchNews, 10 * 60 * 1000);
+
+
+
+
+
+
+

@@ -95,3 +95,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial placement
     if (window.innerWidth > 780) updateIndicator(active, true);
 });
+
+
+
+
+
+
+
+if (headline.includes("earthquake") || headline.includes("attack")) {
+  // trigger subtle alert effect
+  document.body.classList.add("alert");
+  setTimeout(() => document.body.classList.remove("alert"), 5000);
+}

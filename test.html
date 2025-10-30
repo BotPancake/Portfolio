@@ -1,33 +1,538 @@
-<html>
-    <head>
-        <title>Test Page</title>
-        <link rel="stylesheet" type="text/css" href="styles.css">
-        <script src="script.js" defer></script>
-        <header id="header">
-            TEST PAGE
-        </header>
-    </head>
-    <body>
-        <header>
-            <ul>
-                <li><a href="#">Home </a></li>
-                <li><a href="#">Services </a></li>
-                <li><a href="doomsday.html">Doomsday </a></li>
-                <li><a href="#">About </a></li>
-            </ul>
-        </header>
-        <p></p>
-        <div id="welcome">
-            <h2>
-                Welcome to the Test Page
-                
-            </h2>
-            <br>
-            </br>
-            <p>
-                This is a sample paragraph to demonstrate the structure of the HTML document.
-            </p>
-        </div>
-    </body>
-</html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Global Crisis Terminal — Option B (Mixed Data)</title>
 
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- Leaflet (map) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2kY1g1bM/3s3G0xq6b7cVY9QK6f5m1z6bH0+0r0=" crossorigin=""/>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#071027;        /* deep blue */
+      --panel: rgba(255,255,255,0.04);
+      --accent:#25d7ff;    /* cyan accent */
+      --accent-2:#8be2ff;  /* lighter cyan */
+      --danger:#ff5c63;    /* alert red */
+      --muted: rgba(255,255,255,0.6);
+      --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+    }
+
+    html,body{height:100%;}
+    body{
+      margin:0;
+      height:100%;
+      background: linear-gradient(180deg, #041226 0%, var(--bg) 60%);
+      color: #d6f7ff;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow:hidden;
+    }
+
+    /* TOP BAR */
+    .topbar{
+      height:64px;
+      display:flex;
+      align-items:center;
+      padding:0 20px;
+      gap:16px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      position:relative;
+      z-index:20;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:1px;
+    }
+    .brand .logo{
+      width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#042233;font-weight:900;font-family:monospace;
+    }
+    .top-right{margin-left:auto;display:flex;gap:12px;align-items:center}
+    .chip{background:var(--glass);padding:8px 12px;border-radius:8px;font-size:13px;color:var(--muted);border:1px solid rgba(255,255,255,0.02)}
+
+    /* LAYOUT */
+    .container{
+      display:grid;
+      grid-template-columns: 340px 1fr 320px;
+      grid-template-rows: calc(100vh - 64px - 40px);
+      gap:18px;
+      padding:18px;
+      box-sizing:border-box;
+      height: calc(100vh - 64px - 40px);
+    }
+
+    .panel{
+      background:var(--panel);
+      border-radius:12px;
+      padding:14px;
+      box-shadow: 0 6px 30px rgba(2,8,20,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+      overflow:hidden;
+    }
+
+    /* Left panel */
+    .left{display:flex;flex-direction:column;gap:14px}
+    .small-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+
+    /* CO2 Chart */
+    #co2Chart{width:100%;height:160px}
+
+    /* MAIN */
+    .main{display:flex;flex-direction:column;gap:14px}
+    .main-top{display:flex;gap:14px}
+    .countdown-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+    .doomsday-clock{
+      font-weight:900;font-size:54px;letter-spacing:6px;color:var(--accent-2);
+      text-shadow: 0 0 26px rgba(139,226,255,0.08), 0 4px 20px rgba(0,0,0,0.7);
+      display:flex;gap:14px;align-items:center
+    }
+    .doomsday-sub{font-size:12px;color:var(--muted);margin-top:6px}
+
+    /* MAP */
+    #map{height:360px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);}
+
+    /* RIGHT */
+    .right{display:flex;flex-direction:column;gap:12px}
+    .news-list{height:220px;overflow:auto}
+    .news-item{padding:8px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02)}
+
+    /* Terminal */
+    .terminal{height:160px;background:linear-gradient(180deg,var(--glass-2),transparent);border-radius:8px;padding:10px;display:flex;flex-direction:column}
+    .terminal-output{flex:1;overflow:auto;font-family:monospace;font-size:13px;color:#bfefff}
+    .terminal-input{display:flex;gap:8px;margin-top:8px}
+    .terminal-input input{flex:1;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--accent-2);font-family:monospace}
+
+    /* Footer news ticker */
+    .ticker{position:fixed;left:0;right:0;bottom:0;height:40px;background:linear-gradient(90deg, rgba(0,0,0,0.6), rgba(3,12,25,0.8));display:flex;align-items:center;padding:0 12px;border-top:1px solid rgba(255,255,255,0.02);z-index:30}
+    .ticker .label{padding:8px 12px;background:rgba(255,255,255,0.02);border-radius:6px;margin-right:12px;color:var(--muted);font-size:13px}
+    .ticker .scroll{white-space:nowrap;overflow:hidden;flex:1}
+    .scroll-inner{display:inline-block;padding-left:100%;animation:scroll 60s linear infinite}
+    .scroll-item{display:inline-block;padding:0 40px;color:#d6f7ff}
+
+    @keyframes scroll{from{transform:translateX(0%)}to{transform:translateX(-100%)} }
+
+    /* Threat gauge */
+    .gauge{height:120px;display:flex;align-items:center;justify-content:center}
+    .gauge .value{font-size:34px;font-weight:900;color:var(--danger)}
+
+    /* Alerts */
+    .alert-flag{padding:8px 10px;border-radius:8px;background:linear-gradient(90deg, rgba(255,92,99,0.12), rgba(255,92,99,0.04));color:var(--danger);font-weight:700}
+
+    /* Small responsive */
+    @media (max-width:1100px){
+      .container{grid-template-columns:1fr;grid-template-rows:auto;overflow:auto;height:auto;padding-bottom:80px}
+      .topbar{position:sticky;top:0}
+      .ticker{position:fixed}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><div class="logo">GT</div><div>Global Crisis Terminal</div></div>
+    <div class="chip" id="utc-clock">UTC: --:--:--</div>
+    <div class="chip" id="local-clock">Local: --:--:--</div>
+    <div class="top-right">
+      <div class="chip" id="threat-index">Threat: --%</div>
+      <div class="chip" id="mode-chip">Mode: Mixed</div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- LEFT PANEL -->
+    <div class="panel left">
+      <div>
+        <div class="small-title">CO₂ Concentration (ppm)</div>
+        <canvas id="co2Chart"></canvas>
+      </div>
+
+      <div>
+        <div class="small-title">Temperature Anomaly (°C)</div>
+        <div style="font-size:28px;font-weight:700;color:var(--accent-2);margin-top:6px" id="tempAnomaly">-- °C</div>
+      </div>
+
+      <div>
+        <div class="small-title">Recent Incidents</div>
+        <div id="incident-list" style="max-height:220px;overflow:auto;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- MAIN PANEL -->
+    <div class="panel main">
+      <div class="main-top">
+        <div style="flex:1" class="countdown-panel">
+          <div class="doomsday-clock" id="countdown">--D --H --M --S</div>
+          <div class="doomsday-sub">Next checkpoint: <span id="next-checkpoint">New Year 2026 (UTC)</span></div>
+        </div>
+
+        <div style="width:420px" class="panel" aria-hidden="false">
+          <div class="small-title">Global Stability Gauge</div>
+          <div class="gauge">
+            <div style="text-align:center">
+              <div class="value" id="gauge-value">--%</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:6px">Composite threat index</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:space-around;margin-top:8px">
+            <div class="chip" id="co2-chip">CO₂: -- ppm</div>
+            <div class="chip" id="temp-chip">Temp: -- °C</div>
+            <div class="chip" id="eq-chip">Quakes (24h): --</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="map" aria-label="Global incidents map"></div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel right">
+      <div>
+        <div class="small-title">Top Headlines</div>
+        <div class="news-list" id="news-list">Loading headlines...</div>
+      </div>
+
+      <div>
+        <div class="small-title">Operator Terminal</div>
+        <div class="terminal" id="terminal">
+          <div class="terminal-output" id="terminal-output">Welcome, Operator. Type <code>help</code> for commands.</div>
+          <div class="terminal-input">
+            <input id="terminal-input" autocomplete="off" placeholder="> enter command" />
+            <button id="terminal-send" style="padding:8px 10px;border-radius:6px;background:var(--accent);border:none;color:#042233;font-weight:700">RUN</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="small-title">Alerts</div>
+        <div id="alerts" style="display:flex;flex-direction:column;gap:8px;margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER TICKER -->
+  <div class="ticker">
+    <div class="label">LIVE WORLD FEED</div>
+    <div class="scroll"><div class="scroll-inner" id="ticker-inner"></div></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-Wn8g1kGQKf4nYJ9Kq2h4rQe+G3eP1mZ3xq4m7j3yZ5s=" crossorigin=""></script>
+
+  <script>
+    // ------------------------------
+    // CONFIG
+    // ------------------------------
+    const TARGET_DATE = new Date('2026-01-01T00:00:00Z').getTime();
+    const NEWS_FEEDS = [
+      'https://feeds.bbci.co.uk/news/world/rss.xml',
+      'https://rss.cnn.com/rss/edition_world.rss',
+      'https://www.reuters.com/world/feed/',
+    ];
+
+    // Free RSS to JSON proxy that accepts rss_url param. CORS-friendly in many cases.
+    const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
+
+    // APIs for CO2 and temperature (public endpoints)
+    const CO2_API = 'https://global-warming.org/api/co2-api';
+    const TEMP_API = 'https://global-warming.org/api/temperature-api';
+
+    // USGS earthquake feed (past day, geoJSON)
+    const USGS_EQ = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson';
+
+    // ------------------------------
+    // DOM refs
+    // ------------------------------
+    const utcClock = document.getElementById('utc-clock');
+    const localClock = document.getElementById('local-clock');
+    const countdownEl = document.getElementById('countdown');
+    const tempAnomalyEl = document.getElementById('tempAnomaly');
+    const co2Chip = document.getElementById('co2-chip');
+    const tempChip = document.getElementById('temp-chip');
+    const eqChip = document.getElementById('eq-chip');
+    const gaugeValue = document.getElementById('gauge-value');
+    const threatIndexChip = document.getElementById('threat-index');
+    const newsList = document.getElementById('news-list');
+    const incidentList = document.getElementById('incident-list');
+    const alertsBox = document.getElementById('alerts');
+    const tickerInner = document.getElementById('ticker-inner');
+
+    // Terminal
+    const termOut = document.getElementById('terminal-output');
+    const termIn = document.getElementById('terminal-input');
+    const termBtn = document.getElementById('terminal-send');
+
+    // Map
+    let map;
+    let eqLayerGroup;
+
+    // Store latest fetched values
+    let latest = { co2: null, temp: null, eqCount: 0, headlines: [] };
+
+    // ------------------------------
+    // CLOCKS
+    // ------------------------------
+    function pad(n){return n.toString().padStart(2,'0')}
+    function updateClocks(){
+      const now = new Date();
+      utcClock.textContent = 'UTC: ' + pad(now.getUTCHours())+':'+pad(now.getUTCMinutes())+':'+pad(now.getUTCSeconds());
+      localClock.textContent = 'Local: ' + pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+    }
+    setInterval(updateClocks,1000); updateClocks();
+
+    // ------------------------------
+    // COUNTDOWN
+    // ------------------------------
+    function updateCountdown(){
+      const now = Date.now();
+      const dist = TARGET_DATE - now;
+      if(dist<=0){ countdownEl.textContent = '💥 00D 00H 00M 00S 💥'; return; }
+      const days = Math.floor(dist/(1000*60*60*24));
+      const hours = Math.floor((dist/(1000*60*60))%24);
+      const minutes = Math.floor((dist/(1000*60))%60);
+      const seconds = Math.floor((dist/1000)%60);
+      countdownEl.textContent = `${days}D ${hours}H ${minutes}M ${seconds}S`;
+    }
+    setInterval(updateCountdown,1000); updateCountdown();
+
+    // ------------------------------
+    // MAP INIT
+    // ------------------------------
+    function initMap(){
+      map = L.map('map', {zoomControl:false, attributionControl:false}).setView([20,0],2);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
+      eqLayerGroup = L.layerGroup().addTo(map);
+    }
+    initMap();
+
+    // ------------------------------
+    // FETCH: Earthquakes
+    // ------------------------------
+    async function fetchEarthquakes(){
+      try{
+        const res = await fetch(USGS_EQ);
+        const data = await res.json();
+        const recent = data.features.slice(0,50);
+        // clear
+        eqLayerGroup.clearLayers();
+        incidentList.innerHTML = '';
+        let count = 0;
+        recent.forEach(f => {
+          const mag = f.properties.mag || 0; const place = f.properties.place || 'unknown';
+          const [lon,lat] = [f.geometry.coordinates[0], f.geometry.coordinates[1]];
+          const circle = L.circleMarker([lat,lon],{
+            radius: Math.max(3, Math.min(18, mag*2)),
+            color: mag >= 5 ? 'orange' : (mag >= 3 ? '#ff9b5c' : '#ffd9a3'),
+            fillOpacity:0.7
+          }).addTo(eqLayerGroup).bindPopup(`Mag ${mag} — ${place}`);
+
+          // add to incidents pane for larger quakes
+          if(mag >= 4.0){
+            const it = document.createElement('div'); it.className='news-item';
+            it.textContent = `EQ M${mag} — ${place}`;
+            incidentList.appendChild(it);
+          }
+          count++;
+        });
+        latest.eqCount = count;
+        eqChip.textContent = `Quakes (24h): ${count}`;
+      }catch(e){ console.error('EQ fetch',e); }
+    }
+
+    // ------------------------------
+    // FETCH: CO2 & Temp
+    // ------------------------------
+    async function fetchClimate(){
+      try{
+        // CO2
+        const r1 = await fetch(CO2_API);
+        const d1 = await r1.json();
+        // co2 array typically {date,trend,...}
+        const co2Arr = d1.co2 || d1.co2 || [];
+        const lastCo2 = co2Arr.length ? co2Arr[co2Arr.length-1].trend : null;
+        latest.co2 = lastCo2 || null;
+        co2Chip.textContent = `CO₂: ${ lastCo2 ? Number(lastCo2).toFixed(2) + ' ppm' : '--' }`;
+
+        // Temperature anomaly
+        const r2 = await fetch(TEMP_API);
+        const d2 = await r2.json();
+        // result is often an array of { year, land } or similar
+        const tarr = d2.result || [];
+        const lastTemp = tarr.length ? tarr[tarr.length-1].land : null;
+        latest.temp = lastTemp || null;
+        tempAnomalyEl.textContent = lastTemp ? `${Number(lastTemp).toFixed(2)} °C` : '-- °C';
+        tempChip.textContent = `Temp: ${ lastTemp ? Number(lastTemp).toFixed(2) + ' °C' : '--' }`;
+
+      }catch(e){ console.error('climate fetch',e); co2Chip.textContent='CO₂: err'; tempChip.textContent='Temp: err'; }
+    }
+
+    // ------------------------------
+    // NEWS: RSS -> headlines
+    // ------------------------------
+    async function fetchNews(){
+      try{
+        const feed = NEWS_FEEDS[Math.floor(Math.random()*NEWS_FEEDS.length)];
+        const res = await fetch(RSS_PROXY + encodeURIComponent(feed));
+        const json = await res.json();
+        const items = json.items || [];
+        latest.headlines = items.slice(0,12).map(i=>({title:i.title, link:i.link}));
+
+        // render list
+        newsList.innerHTML = '';
+        latest.headlines.slice(0,6).forEach(h => {
+          const el = document.createElement('div'); el.className='news-item';
+          const a = document.createElement('a'); a.href=h.link; a.target='_blank'; a.rel='noreferrer'; a.textContent=h.title;
+          a.style.color='inherit'; a.style.textDecoration='none'; el.appendChild(a);
+          newsList.appendChild(el);
+        });
+
+        // ticker
+        tickerInner.innerHTML = '';
+        latest.headlines.forEach(h=>{
+          const sp = document.createElement('span'); sp.className='scroll-item'; sp.textContent = h.title; tickerInner.appendChild(sp);
+        });
+
+      }catch(e){ console.error('news fetch',e); newsList.textContent='Unable to load news.' }
+    }
+
+    // ------------------------------
+    // CHART: CO2 timeseries (last 30)
+    // ------------------------------
+    let co2Chart;
+    function drawCO2(values,labels){
+      const ctx = document.getElementById('co2Chart').getContext('2d');
+      if(co2Chart) co2Chart.destroy();
+      co2Chart = new Chart(ctx,{
+        type:'line',
+        data:{labels:labels, datasets:[{label:'CO₂ (ppm)', data:values, tension:0.3, borderWidth:2, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()}]},
+        options:{
+          plugins:{legend:{display:false}},
+          scales:{x:{display:false}, y:{beginAtZero:false}},
+        }
+      });
+    }
+
+    // ------------------------------
+    // THREAT INDEX: combine metrics into single percent
+    //    Basic normalization: co2 (400-450ppm), temp (0-3°C), eqcount (0-100)
+    //    We also add a small random "story" multiplier to create 'mixed' dramatization.
+    // ------------------------------
+    function computeThreat(){
+      const co2 = latest.co2 || 420;
+      const temp = latest.temp || 1.0;
+      const eq = latest.eqCount || 0;
+
+      const co2Score = Math.min(1, Math.max(0, (co2 - 350) / 150)); // 350->1
+      const tempScore = Math.min(1, Math.max(0, temp / 4));
+      const eqScore = Math.min(1, Math.max(0, eq / 80));
+
+      // fictional modifiers for drama
+      const storyBoost = 0.05 * Math.sin(Date.now()/60000) + (Math.random()*0.03);
+
+      let composite = (co2Score*0.45 + tempScore*0.35 + eqScore*0.2) + storyBoost;
+      composite = Math.min(1, Math.max(0, composite));
+      const percent = Math.round(composite * 100);
+
+      // update UI
+      gaugeValue.textContent = percent + '%';
+      threatIndexChip.textContent = `Threat: ${percent}%`;
+      document.getElementById('mode-chip').textContent = 'Mode: Mixed';
+
+      // generate alerts if high
+      if(percent >= 75) pushAlert('Red Alert — Elevated global risk detected');
+      else if(percent >= 50) pushAlert('Warning — Monitor critical systems');
+
+      return percent;
+    }
+
+    function pushAlert(text){
+      const el = document.createElement('div'); el.className='alert-flag'; el.textContent = text; alertsBox.prepend(el);
+      setTimeout(()=>{ el.style.opacity = '0'; setTimeout(()=>el.remove(),800); }, 8000);
+    }
+
+    // ------------------------------
+    // Terminal (simple rule-based + narrative)
+    // ------------------------------
+    const HELP_TEXT = `Available commands: help, status, threat, news, map, heartbeat, lore`;
+
+    function termPrint(text){ termOut.innerHTML += '\n' + text; termOut.scrollTop = termOut.scrollHeight; }
+
+    function handleCommand(raw){
+      const cmd = (raw||'').trim().toLowerCase();
+      if(!cmd) return;
+      termPrint('> ' + cmd);
+      switch(cmd){
+        case 'help': termPrint(HELP_TEXT); break;
+        case 'status': termPrint(`SYSTEM NOMINAL — Threat index: ${gaugeValue.textContent}`); break;
+        case 'threat': termPrint(`Composite threat: ${gaugeValue.textContent} — Drivers: CO₂, Temp Anomaly, Seismic Activity`); break;
+        case 'news': termPrint(latest.headlines.slice(0,5).map(h=>'- '+h.title).join('\n')); break;
+        case 'map': termPrint('Map center: ' + map.getCenter().lat.toFixed(2) + ',' + map.getCenter().lng.toFixed(2)); break;
+        case 'heartbeat': termPrint('Heartbeat OK — ' + new Date().toISOString()); break;
+        case 'lore': termPrint(randomLore()); break;
+        default: termPrint('UNKNOWN COMMAND — type help for options'); break;
+      }
+    }
+
+    termBtn.addEventListener('click',()=>{ handleCommand(termIn.value); termIn.value=''; });
+    termIn.addEventListener('keydown', e=>{ if(e.key==='Enter'){ handleCommand(termIn.value); termIn.value=''; } });
+
+    function randomLore(){
+      const seeds = [
+        'Operator log: Satellite anomaly detected over North Atlantic — telemetry delayed.',
+        'Field report: Unusual migratory patterns recorded in Arctic region.',
+        'Classified: Off-grid reactors showing higher-than-expected readouts (sanitized).',
+        'Archive note: Global CO₂ crossing critical thresholds in late-21st century scenarios.'
+      ];
+      return seeds[Math.floor(Math.random()*seeds.length)];
+    }
+
+    // ------------------------------
+    // BOOTSTRAP: fetch everything and set intervals
+    // ------------------------------
+    async function bootstrap(){
+      await Promise.all([fetchClimate(), fetchEarthquakes(), fetchNews()]);
+
+      // draw CO2 chart if data available
+      try{
+        const res = await fetch(CO2_API);
+        const d = await res.json();
+        const arr = d.co2 || [];
+        const last = arr.slice(-30);
+        const vals = last.map(x=>Number(x.trend));
+        const labs = last.map(x=>x.date);
+        if(vals.length) drawCO2(vals,labs);
+      }catch(e){ console.warn('chart draw failed',e); }
+
+      computeThreat();
+
+      // schedule periodic refresh
+      setInterval(async ()=>{ await fetchClimate(); computeThreat(); }, 60*60*1000); // hourly
+      setInterval(async ()=>{ await fetchEarthquakes(); computeThreat(); }, 5*60*1000); // every 5 minutes
+      setInterval(async ()=>{ await fetchNews(); }, 10*60*1000); // every 10 minutes
+
+      // small heartbeat message on terminal
+      setInterval(()=>{ termPrint('HEARTBEAT ' + new Date().toISOString()); }, 5*60*1000);
+    }
+    bootstrap();
+
+    // make the ticker loop smoother by duplicating content when short
+    function ensureTicker(){ if(!tickerInner.children.length) return; let totalWidth = Array.from(tickerInner.children).reduce((s,c)=>s+c.offsetWidth,0); if(totalWidth < window.innerWidth) {
+        // duplicate until longer
+        const clone = tickerInner.innerHTML; while(tickerInner.offsetWidth < window.innerWidth*2){ tickerInner.innerHTML += clone; }
+      } }
+    window.addEventListener('load', ensureTicker); window.addEventListener('resize', ensureTicker);
+
+    // refresh threat every 15s to slowly update story modifier
+    setInterval(()=>{ computeThreat(); }, 15*1000);
+
+  </script>
+
+</body>
+</html>
