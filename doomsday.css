@@ -1,0 +1,103 @@
+body {
+  background-color: #000;
+  color: #ff4444;
+  font-family: 'Share Tech Mono', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+}
+
+.doomsday-terminal {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,0,0,0.05) 0%, transparent 80%);
+  animation: pulse 3s infinite ease-in-out;
+  z-index: 1;
+}
+
+.title {
+  font-size: 1.5rem;
+  letter-spacing: 4px;
+  text-shadow: 0 0 15px red;
+  animation: flicker 2s infinite;
+  z-index: 2;
+  position: relative;
+}
+
+.countdown {
+  font-size: 4rem;
+  margin: 20px 0;
+  letter-spacing: 6px;
+  text-shadow: 0 0 25px red;
+}
+
+.data-panel {
+  border-top: 1px solid rgba(255, 68, 68, 0.5);
+  padding-top: 20px;
+  font-size: 1.2rem;
+  color: #ffcccc;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.4; }
+}
+
+
+
+
+
+
+.news-ticker {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  border-top: 1px solid rgba(255, 68, 68, 0.5);
+  color: #ff4444;
+  font-family: 'Share Tech Mono', monospace;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  height: 40px;
+  z-index: 10;
+}
+
+.ticker-title {
+  flex-shrink: 0;
+  padding: 0 15px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px red;
+}
+
+.ticker-content {
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+  animation: ticker 60s linear infinite;
+}
+
+@keyframes ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.ticker-content span {
+  padding-right: 50px;
+}
