@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Christmas Countdown</title>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* General Styles */
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #0b1a0f;
+      font-family: 'Raleway', sans-serif;
+      color: #f9f1d7;
+      overflow: hidden;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 2rem;
+      font-weight: 900;
+      text-shadow: 0 0 20px #ffd700;
+      letter-spacing: 4px;
+    }
+
+    .countdown-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .countdown {
+      font-size: 5rem;
+      letter-spacing: 8px;
+      text-shadow: 0 0 30px #ffd700;
+      margin: 20px 0;
+    }
+
+    .weather {
+      font-size: 1.5rem;
+      margin-top: 10px;
+      color: #f0e68c;
+    }
+
+    .music-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffd700, #f9f1d7);
+      color: #0b1a0f;
+      cursor: pointer;
+      box-shadow: 0 0 20px #ffd700;
+    }
+
+    .news-ticker {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.8);
+      color: #f9f1d7;
+      display: flex;
+      align-items: center;
+      height: 40px;
+      overflow: hidden;
+      border-top: 1px solid #ffd700;
+      font-family: 'Raleway', sans-serif;
+      font-weight: 700;
+    }
+
+    .ticker-title {
+      flex-shrink: 0;
+      padding: 0 15px;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px #ffd700;
+    }
+
+    .ticker-content {
+      white-space: nowrap;
+      display: inline-block;
+      animation: ticker 60s linear infinite;
+    }
+
+    .ticker-content span {
+      padding-right: 50px;
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* Snow Canvas */
+    #snow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="snow"></canvas>
+  <header>🎅 CHRISTMAS COUNTDOWN ACTIVE</header>
+  <div class="countdown-container">
+    <div class="countdown" id="countdown">--D --H --M --S</div>
+    <div class="weather" id="weather">Loading local weather...</div>
+    <button class="music-btn" id="musicBtn">Play Music</button>
+  </div>
+
+  <div class="news-ticker">
+    <div class="ticker-title">🌍 LIVE WORLD FEED:</div>
+    <div class="ticker-content" id="news-ticker"></div>
+  </div>
+
+  <script>
+    // ---------------- Countdown ----------------
+    const countdownEl = document.getElementById('countdown');
+    const targetDate = new Date(new Date().getFullYear(), 11, 24, 0, 0, 0, 0).getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+      if(distance <= 0) {
+        countdownEl.textContent = "🎄 IT'S CHRISTMAS! 🎄";
+        return;
+      }
+      const days = Math.floor(distance / (1000*60*60*24));
+      const hours = Math.floor((distance / (1000*60*60)) % 24);
+      const minutes = Math.floor((distance / (1000*60)) % 60);
+      const seconds = Math.floor((distance / 1000) % 60);
+      countdownEl.textContent = `${days}D ${hours}H ${minutes}M ${seconds}S`;
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // ---------------- Snow ----------------
+    const canvas = document.getElementById('snow');
+    const ctx = canvas.getContext('2d');
+    let flakes = [];
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    function initSnow() {
+      resizeCanvas();
+      flakes = Array.from({length: 120}, () => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+0.5, d: Math.random()*1+0.2}));
+    }
+    function drawSnow() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      flakes.forEach(f => {
+        ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+        f.y += f.d + Math.sin(f.x/100);
+        f.x += Math.sin(f.d*10);
+        if(f.y>canvas.height) f.y=-10;
+        if(f.x>canvas.width) f.x=0;
+      });
+      requestAnimationFrame(drawSnow);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    initSnow();
+    drawSnow();
+
+    // ---------------- Music ----------------
+    let musicOn = false;
+    let music = new Audio('https://actions.google.com/sounds/v1/ambiences/winter_wind.ogg');
+    music.loop = true;
+    document.getElementById('musicBtn').addEventListener('click', ()=>{
+      musicOn = !musicOn;
+      musicOn ? music.play() : music.pause();
+      document.getElementById('musicBtn').textContent = musicOn ? 'Music: On' : 'Play Music';
+    });
+
+    // ---------------- Weather ----------------
+    const weatherEl = document.getElementById('weather');
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        try{
+          const res = await fetch(`https://wttr.in/${lat},${lon}?format=j1`);
+          const data = await res.json();
+          const temp = data.current_condition[0].temp_C;
+          const desc = data.current_condition[0].weatherDesc[0].value;
+          weatherEl.textContent = `🌡️ Local Temp: ${temp}°C | ${desc}`;
+        }catch(e){
+          weatherEl.textContent = '⚠️ Unable to fetch weather';
+        }
+      });
+    } else {
+      weatherEl.textContent = '⚠️ Geolocation not available';
+    }
+
+    // ---------------- News Ticker ----------------
+    const tickerEl = document.getElementById('news-ticker');
+    const FEEDS = [
+      "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "https://rss.cnn.com/rss/edition_world.rss",
+      "https://www.reuters.com/rssFeed/worldNews"
+    ];
+    const RSS_PROXY = "https://api.rss2json.com/v1/api.json?rss_url=";
+
+    async function fetchNews(){
+      try{
+        const feedUrl = FEEDS[Math.floor(Math.random()*FEEDS.length)];
+        const res = await fetch(RSS_PROXY + encodeURIComponent(feedUrl));
+        const data = await res.json();
+        const headlines = data.items.slice(0,10).map(item=>`<span>${item.title}</span>`);
+        tickerEl.innerHTML = headlines.join(' 🔺 ');
+      }catch(e){
+        tickerEl.innerHTML = '<span>⚠️ Unable to load news feed.</span>';
+      }
+    }
+    fetchNews();
+    setInterval(fetchNews, 10*60*1000);
+  </script>
+</body>
+</html>
