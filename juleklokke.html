@@ -129,7 +129,7 @@
   <script>
     // ---------------- Countdown ----------------
     const countdownEl = document.getElementById('countdown');
-    const targetDate = new Date(new Date().getFullYear(), 11, 24, 0, 0, 0, 0).getTime();
+    const targetDate = new Date(new Date().getFullYear(), 11, 24, 17, 0, 0, 0).getTime();
 
     function updateCountdown() {
       const now = new Date().getTime();
@@ -176,14 +176,55 @@
     drawSnow();
 
     // ---------------- Music ----------------
-    let musicOn = false;
-    let music = new Audio('https://www.accuradio.com/accuholidays');
-    music.loop = true;
-    document.getElementById('musicBtn').addEventListener('click', ()=>{
-      musicOn = !musicOn;
-      musicOn ? music.play() : music.pause();
-      document.getElementById('musicBtn').textContent = musicOn ? 'Music: On' : 'Play Music';
-    });
+        let musicOn = false;
+        // Use a direct audio resource (must be a direct media file or stream URL).
+        // For best results host the file on the same origin as this page or use a CORS-enabled resource.
+        const music = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+        music.crossOrigin = 'anonymous';
+        music.loop = true;
+        music.preload = 'auto';
+        music.volume = 0.85;
+
+        let audioUnlocked = false;
+
+        // Attempt to unlock audio on the first user gesture (many mobile/desktop browsers block audio until user interaction).
+        async function unlockAudio() {
+          if (audioUnlocked) return;
+          try {
+            music.muted = true;
+            await music.play();
+            music.pause();
+            music.currentTime = 0;
+            music.muted = false;
+            audioUnlocked = true;
+          } catch (e) {
+            // ignore; unlocking may still fail if source has CORS restrictions
+          }
+        }
+
+        const musicBtn = document.getElementById('musicBtn');
+        // Ensure unlock is attempted on the first pointer/touch interaction (covers more devices than click alone)
+        musicBtn.addEventListener('pointerdown', unlockAudio, { once: true });
+
+        musicBtn.addEventListener('click', async () => {
+          musicOn = !musicOn;
+          try {
+            if (musicOn) {
+              if (!audioUnlocked) await unlockAudio();
+              await music.play();
+              musicBtn.textContent = 'Music: On';
+            } else {
+              music.pause();
+              musicBtn.textContent = 'Play Music';
+            }
+          } catch (err) {
+            // Play may be blocked or the source may not allow CORS; revert state and notify user.
+            musicOn = false;
+            music.pause();
+            musicBtn.textContent = 'Play Music';
+            alert('Unable to play audio — host the file on the same origin or use a CORS-enabled source, and try again.');
+          }
+        });
 
     // ---------------- Weather ----------------
     const weatherEl = document.getElementById('weather');
