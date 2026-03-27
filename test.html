@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,28 +12,160 @@
       --accent: #44bd32;
       --text: #2f3640;
       --bg: #f5f6fa;
+      --card-bg: #ffffff;
+      --card-shadow: rgba(0,0,0,0.05);
+      --footer-color: #666;
+      --info-color: #666;
+      --toggle-bg: #dde1ea;
+      --toggle-knob: #ffffff;
+      --toggle-icon: "🌙";
     }
+
+    [data-theme="dark"] {
+      --primary: #1a6fa8;
+      --secondary: #74b3e0;
+      --accent: #44bd32;
+      --text: #e8eaf0;
+      --bg: #12161e;
+      --card-bg: #1e2430;
+      --card-shadow: rgba(0,0,0,0.3);
+      --footer-color: #8899aa;
+      --info-color: #8899aa;
+      --toggle-bg: #1a6fa8;
+      --toggle-knob: #ffffff;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
-    header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      transition: background 0.3s ease;
+    }
+
     header h1 { font-weight: 700; font-size: 2em; }
     header p { margin-top: 8px; font-weight: 400; }
+
+    /* Dark mode toggle button */
+    .theme-toggle {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.85);
+      font-size: 0.85em;
+      font-family: 'Inter', sans-serif;
+      padding: 6px 10px;
+      border-radius: 20px;
+      transition: background 0.2s;
+    }
+
+    .theme-toggle:hover { background: rgba(255,255,255,0.12); }
+
+    .toggle-track {
+      width: 44px;
+      height: 24px;
+      background: var(--toggle-bg);
+      border-radius: 12px;
+      position: relative;
+      transition: background 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: var(--toggle-knob);
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+
+    [data-theme="dark"] .toggle-knob {
+      transform: translateX(20px);
+    }
+
+    .toggle-icon { font-size: 1em; }
+
     section { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-    h2 { font-size: 1.8em; margin-bottom: 20px; color: var(--primary); }
-    #projects { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 20px; }
-    .project { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.05); transition: transform 0.2s; }
+
+    h2 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      color: var(--primary);
+      transition: color 0.3s ease;
+    }
+
+    #projects {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .project {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 6px 20px var(--card-shadow);
+      transition: transform 0.2s, background 0.3s ease, box-shadow 0.3s ease;
+    }
+
     .project:hover { transform: translateY(-4px); }
-    .project h3 { font-size: 1.2em; margin-bottom: 10px; color: var(--secondary); }
+    .project h3 { font-size: 1.2em; margin-bottom: 10px; color: var(--secondary); transition: color 0.3s ease; }
     .project p { font-size: 0.95em; margin-bottom: 10px; }
-    .project .info { font-size: 0.85em; color: #666; margin-bottom: 10px; }
+    .project .info { font-size: 0.85em; color: var(--info-color); margin-bottom: 10px; transition: color 0.3s ease; }
     .project a { color: var(--accent); text-decoration: none; font-weight: 600; }
-    footer { text-align: center; padding: 20px; margin-top: 40px; font-size: 0.9em; color: #666; }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: var(--footer-color);
+      transition: color 0.3s ease;
+    }
+
+    #contact a { color: var(--accent); }
+
+    @media (max-width: 480px) {
+      .theme-toggle span:not(.toggle-track):not(.toggle-knob):not(.toggle-icon) {
+        display: none;
+      }
+      .theme-toggle { right: 12px; }
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Morten S. Eriksen</h1>
     <p>Software Developer | Full Stack Engineer | Open Source Enthusiast</p>
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+      <span class="toggle-icon" id="themeIcon">🌙</span>
+      <span id="themeLabel">Dark mode</span>
+      <div class="toggle-track">
+        <div class="toggle-knob"></div>
+      </div>
+    </button>
   </header>
 
   <section id="about">
@@ -58,6 +190,31 @@
   </footer>
 
   <script>
+    // --- Dark mode ---
+    const html = document.documentElement;
+    const icon = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+
+    // Restore saved preference, or respect OS preference
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    applyTheme(initialTheme);
+
+    function applyTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+      label.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+    }
+
+    function toggleTheme() {
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      localStorage.setItem('theme', next);
+    }
+
+    // --- GitHub projects ---
     const username = "BotPancake";
     const projectsContainer = document.getElementById("projects");
 
@@ -65,7 +222,6 @@
       try {
         const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=12`);
         const repos = await res.json();
-
         projectsContainer.innerHTML = repos.map(repo => `
           <div class="project">
             <h3>${repo.name}</h3>
